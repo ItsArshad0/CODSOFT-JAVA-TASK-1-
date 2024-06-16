@@ -1,0 +1,122 @@
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.util.Random;
+import javax.swing.*;
+
+public class GuessingGameGUI {
+    private JFrame frame;
+    private JTextField guessField;
+    private JTextArea feedbackArea;
+    private JLabel attemptsLabel;
+    private JLabel scoreLabel;
+    private int numberToGuess;
+    private int attempts;
+    private int totalScore;i
+    private int totalRounds;
+    private final Random random;
+
+    public GuessingGameGUI() {
+        random = new Random();
+        initialize();
+        startNewGame();
+    }
+
+    private void initialize() {
+        frame = new JFrame("Guessing Game");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setSize(400, 300);
+        frame.setLayout(new BorderLayout());
+
+        JPanel topPanel = new JPanel();
+        JLabel guessLabel = new JLabel("Enter your guess: ");
+        guessField = new JTextField(10);
+        JButton guessButton = new JButton("Guess");
+        topPanel.add(guessLabel);
+        topPanel.add(guessField);
+        topPanel.add(guessButton);
+
+        feedbackArea = new JTextArea();
+        feedbackArea.setEditable(false);
+        JScrollPane scrollPane = new JScrollPane(feedbackArea);
+
+        JPanel bottomPanel = new JPanel();
+        attemptsLabel = new JLabel("Attempts: 0");
+        scoreLabel = new JLabel("Score: 0");
+        bottomPanel.add(attemptsLabel);
+        bottomPanel.add(scoreLabel);
+
+        frame.add(topPanel, BorderLayout.NORTH);
+        frame.add(scrollPane, BorderLayout.CENTER);
+        frame.add(bottomPanel, BorderLayout.SOUTH);
+
+        guessButton.addActionListener((ActionEvent e) -> {
+            processGuess();
+        });
+
+        guessField.addActionListener((ActionEvent e) -> {
+            processGuess();
+        });
+
+        frame.setVisible(true);
+    }
+
+    private void startNewGame() {
+        numberToGuess = random.nextInt(100) + 1;
+        attempts = 0;
+        totalRounds++;
+        feedbackArea.setText("Round " + totalRounds + ": Guess the number between 1 and 100. You have 10 attempts.\n");
+        attemptsLabel.setText("Attempts: " + attempts);
+    }
+
+    private void processGuess() {
+        String guessText = guessField.getText();
+        if (guessText.isEmpty()) {
+            feedbackArea.append("Please enter a guess.\n");
+            return;
+        }
+
+        int guess;
+        try {
+            guess = Integer.parseInt(guessText);
+        } catch (NumberFormatException e) {
+            feedbackArea.append("Invalid input. Please enter a number between 1 and 100.\n");
+            return;
+        }
+
+        attempts++;
+        attemptsLabel.setText("Attempts: " + attempts);
+
+        if (guess < numberToGuess) {
+            feedbackArea.append("Too low!\n");
+        } else if (guess > numberToGuess) {
+            feedbackArea.append("Too high!\n");
+        } else {
+            feedbackArea.append("Correct! You've guessed the number in " + attempts + " attempts.\n");
+            totalScore += (10 - attempts + 1);
+            scoreLabel.setText("Score: " + totalScore);
+
+            int option = JOptionPane.showConfirmDialog(frame, "Do you want to play another round?", "Play Again", JOptionPane.YES_NO_OPTION);
+            if (option == JOptionPane.YES_OPTION) {
+                startNewGame();
+            } else {
+                feedbackArea.append("Game Over! Total rounds played: " + totalRounds + ", Total score: " + totalScore + "\n");
+            }
+        }
+
+        if (attempts >= 10 && guess != numberToGuess) {
+            feedbackArea.append("Sorry, you've used all 10 attempts. The correct number was " + numberToGuess + "\n");
+            int option = JOptionPane.showConfirmDialog(frame, "Do you want to play another round?", "Play Again", JOptionPane.YES_NO_OPTION);
+            if (option == JOptionPane.YES_OPTION) {
+                startNewGame();
+            } else {
+                feedbackArea.append("Game Over! Total rounds played: " + totalRounds + ", Total score: " + totalScore + "\n");
+            }
+        }
+
+        guessField.setText("");
+    }
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(GuessingGameGUI::new);
+    }
+}
